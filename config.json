@@ -1,0 +1,37 @@
+{
+    "bridge": {
+        "name": "Homebridge",
+        "username": "CC:22:3D:E3:CE:30",
+        "port": 51826,
+        "pin": "031-45-154"
+    },
+    
+    "description": "This is an example configuration file. You can use this as a template for creating your own configuration file.",
+
+    "platforms": [
+            {
+            "platform": "Blynk",
+            "name": "Blynk",
+            "server": "PUT THE ADDRESS OF THE BLYNK SERVER HERE, PROTOCOL AND PORT INCLUDED",
+            "authtoken": "PUT THE VALUE OF YOUR BLYNK APPLICATION AUTH TOKEN HERE",
+            "accessories": [
+            	{
+                    "name": "ButtonV1",
+                    "type":	"Button",
+                    "mode": "Switch",
+                    "caption": "Led one",
+                    "output": "V1"
+            	},
+            	{
+                    "name": "ButtonV2",
+                    "type":	"Button",
+                    "mode": "Switch",
+                    "caption": "Led two",
+                    "output": "V2"
+            	}
+            ]
+        }
+    ],
+    "accessories": [
+    ]
+}
