@@ -88,13 +88,13 @@ BlynkPlatform.prototype = {
 	  )
       callback(foundAccessories);
   },
-  command: function(c, value, that) {
+  command: function(c, value) {
     var url = this.server + "/" + this.authtoken + "/pin/" + c;
 	var method = "put";
 	var body = value != undefined ? JSON.stringify(
 			  [	value ? "1" : "0" ]
 		) : null;
-		
+    var that = this;
     request({
 	    url: url,
 		body: body,
@@ -104,11 +104,37 @@ BlynkPlatform.prototype = {
   		}
     }, function(err, response) {
       if (err) {
-        that.platform.log("There was a problem sending command " + url);
+        that.log("There was a problem sending command " + url);
       } else {
-        that.platform.log("Sent command " + url);
+        that.log("Sent command " + url);
       }
     });
+  },
+  getAccessoryValue: function(callback, homebridgeAccessory, characteristic, service) {
+	var pin = service.controlService.output;
+    var url = this.server + "/" + this.authtoken + "/pin/" + pin;
+	var method = "get";
+    var that = this;
+    request({
+	    url: url,
+		method: method,
+        headers: {
+		    'Content-Type': 'application/json'
+  		},
+	    json: true
+    }, function(err, response, json) {
+      if (!err && response.statusCode == 200) {
+		switch (service.controlService.blynkType) {
+			case "Button":
+		    	callback(undefined, json[0] == "1" ? true : false);
+		    	break;
+		    default:
+		    	break;
+		}
+      } else {
+        that.log("There was a problem getting value from" + url);
+      }
+    })
   },
   getInformationService: function(homebridgeAccessory) {
     var informationService = new Service.AccessoryInformation();
@@ -120,8 +146,7 @@ BlynkPlatform.prototype = {
   	return informationService;
   },
   bindCharacteristicEvents: function(characteristic, service, homebridgeAccessory) {
-  	var onOff = characteristic.props.format == "bool" ? true : false;
-    	characteristic
+   	characteristic
 		.on('set', function(value, callback, context) {
 						if(context !== 'fromSetValue') {
 							switch (service.controlService.blynkType) {
@@ -143,8 +168,7 @@ BlynkPlatform.prototype = {
 				   }.bind(this) );
     characteristic
         .on('get', function(callback) {
-						// TODO: implement READ
-						callback(undefined, false);
+						homebridgeAccessory.platform.getAccessoryValue(callback, homebridgeAccessory, characteristic, service)
                    }.bind(this) );
   },
   getServices: function(homebridgeAccessory) {
