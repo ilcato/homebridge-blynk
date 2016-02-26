@@ -31,6 +31,12 @@
                     "widget":		"ContactSensor",
                     "caption": 		"Door 1",
                     "pin": 			"D4"
+            	},
+            	{
+                	"name": 		"TemperatureSensor1",
+                    "widget":		"TemperatureSensor",
+                    "caption": 		"Temperature 1",
+                    "pin": 			"V2"
             	}
             ]
         }
