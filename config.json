@@ -12,22 +12,25 @@
             {
             "platform": "Blynk",
             "name": "Blynk",
-            "server": "PUT THE ADDRESS OF THE BLYNK SERVER HERE, PROTOCOL AND PORT INCLUDED",
-            "authtoken": "PUT THE VALUE OF YOUR BLYNK APPLICATION AUTH TOKEN HERE",
+            "server": "PUT THE ADDRESS OF THE LOCAL BLYNK SERVER HERE",
+            "appPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 8443",
+            "apiPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 9443",
+            "username": "PUT THE VALUE OF THE USERNAME HERE",
+            "password": "PUT THE VALUE OF THE PASSWORD HERE",
+			"dashboardName": "PUT THE DASHBOARD NAME HERE",
             "accessories": [
             	{
-                    "name": "ButtonV1",
-                    "type":	"Button",
-                    "mode": "Switch",
-                    "caption": "Led one",
-                    "output": "V1"
+                    "name": 		"SwitchD5",
+                    "widget":		"Switch",
+                    "mode": 		"SWITCH",
+                    "caption": 		"Lamp 1",
+                    "pin": 			"D5"
             	},
             	{
-                    "name": "ButtonV2",
-                    "type":	"Button",
-                    "mode": "Switch",
-                    "caption": "Led two",
-                    "output": "V2"
+                	"name": 		"ContactSensor1",
+                    "widget":		"ContactSensor",
+                    "caption": 		"Door 1",
+                    "pin": 			"D4"
             	}
             ]
         }
