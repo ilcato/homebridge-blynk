@@ -12,7 +12,7 @@ The plugin is published through [NPM](https://www.npmjs.com/package/homebridge-b
 Version 0.1.0
 + First usable version of the plugin
 + HomeKit accessories supported:
-..+ Switch
-..+ Temperature Sensor
-..+ Contact Sensor
+	+ Switch
+	+ Temperature Sensor
+	+ Contact Sensor
 
