@@ -47,6 +47,17 @@ var Service, Characteristic;
 var request = require("request");
 var blynk = require("blynk-app-client");
 
+const UPDATE_PERIOD = 2000;
+const INITIAL_UPDATE_PERIOD = 10000;
+
+
+module.exports = function(homebridge) {
+  Service = homebridge.hap.Service;
+  Characteristic = homebridge.hap.Characteristic;
+  
+  homebridge.registerPlatform("homebridge-blynk", "Blynk", BlynkPlatform);
+}
+
 function BlynkPlatform(log, config) {
   	this.log          	= log;
   	this.server			= config["server"];
@@ -58,143 +69,137 @@ function BlynkPlatform(log, config) {
   	this.BlynkAccessories = config["accessories"];
   	this.blynkServer 	= blynk.createClient(this.server, this.appPort);
 }
+BlynkPlatform.prototype.accessories = function(callback) {
+	this.log("Loading accessories...");
 
-module.exports = function(homebridge) {
-  Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
-  
-  homebridge.registerPlatform("homebridge-blynk", "Blynk", BlynkPlatform);
-}
-
-BlynkPlatform.prototype = {
-	accessories: function(callback) {
-    	this.log("Loading accessories...");
-
-      	var that = this;
-      	var foundAccessories = [];
-      	if (this.BlynkAccessories == null || this.BlynkAccessories.length == 0) {
-      		callback(foundAccessories); 
-      		return;
-      	}
-      	this.blynkServer.connect(this.username, this.password)
-			.then(function (status) {
-				return that.blynkServer.loadProfileGzipped();	
-			})
-			.then(function (profile) {
-				var dashBoards = JSON.parse(profile).dashBoards;
-				dashBoards.map(function(dashboard) {
-					if (dashboard.name == that.dashboardName) {
-						that.dashboard = dashboard;
-					}
-				});
-				if (that.dashboard == undefined) {
-		      		callback(foundAccessories); 
-      				return;
-				}
-				that.blynkServer.activate(that.dashboard.id)
-				.then(function (status) {
-					return that.blynkServer.getToken(that.dashboard.id);
-				})
-				.then(function (token) {
-					that.token = token;
-				})
-				.catch (function (err) {
-					that.log("Error getting token"); 
-		      		callback(foundAccessories); 
-      				return;
-				});
-				that.BlynkAccessories.map(function(s) {
-					that.log("Found: " + s.name);
-					var accessory = null;
-					var services = [];
-					var service = null;
-					switch (s.widget) {
-						case "Switch":
-							service = {
-								controlService: new Service.Switch(s.caption),
-								characteristics: [Characteristic.On]
-							};
-							service.controlService.mode = s.mode;
-							service.controlService.pi = s.pin;
-							break;
-						case "ContactSensor":
-							service = {
-								controlService: new Service.ContactSensor(s.caption),
-								characteristics: [Characteristic.ContactSensorState]
-							};
-							break;
-						case "TemperatureSensor":
-							service = {
-								controlService: new Service.TemperatureSensor(s.caption),
-								characteristics: [Characteristic.CurrentTemperature]
-							};
-							break;
-						default:
-							break;
-					}
-					if (service != null) {
-						service.controlService.widget = s.widget;
-						service.controlService.pin = s.pin;
-						services.push(service);
-						accessory = new BlynkAccessory(services);
-						accessory.getServices = function() {
-								return that.getServices(accessory);
-						};
-						accessory.platform 			= that;
-						accessory.remoteAccessory	= s;
-						accessory.name				= s.name;
-						accessory.model				= "Blynk";
-						accessory.manufacturer		= "Blynk";
-						accessory.serialNumber		= "<unknown>";
-						foundAccessories.push(accessory);
-					}
-				}
-			  )
-			  callback(foundAccessories);
-
-			})
-			.catch(function (error) {
-				this.log("Error: " + error);
-	      		callback(foundAccessories); 
-    	  		return;
-		});
-	},
-	
-  	hardwareWrite: function(pinString, value) {
-  		var pinType = pinString.substr(0,1).toLowerCase();
-  		var pin = pinString.substr(1,1);
-  		var that = this;
-  		this.blynkServer.hardware(this.dashboard.id, pinType, "w", pin, value ? 1 : 0)
-  		.catch(function (err) {
-        	that.log("There was a problem sending hardware write command on: " + pinString);
-  		});
-  	},
-  	hardwareRead: function(callback, homebridgeAccessory, characteristic, service) {
-		var pinString = service.controlService.pin;
-		var pinType = pinString.substr(0,1).toLowerCase();
-		var pin = pinString.substr(1,1);
-		var that = this;
-		this.blynkServer.hardware(this.dashboard.id, pinType, "r", pin)
-		.then(function (fields) {
-			var pinValue = fields[3];
-			switch (service.controlService.widget) {
-				case "Switch":
-				case "ContactSensor":
-					callback(undefined, pinValue == 1 ? true : false);
-					break;
-				case "TemperatureSensor":
-					callback(undefined, parseFloat(pinValue));
-					break;
-				default:
-					break;
-			}
+	var that = this;
+	var foundAccessories = [];
+	if (this.BlynkAccessories == null || this.BlynkAccessories.length == 0) {
+		callback(foundAccessories); 
+		return;
+	}
+	this.blynkServer.connect(this.username, this.password)
+		.then(function (status) {
+			return that.blynkServer.loadProfileGzipped();	
 		})
-		.catch(function (err) {
-			callback(undefined, false);
-			that.log("There was a problem sending hardware read command on: " + pinString);
-		});
-	},
-  getInformationService: function(homebridgeAccessory) {
+		.then(function (profile) {
+			var dashBoards = JSON.parse(profile).dashBoards;
+			dashBoards.map(function(dashboard) {
+				if (dashboard.name == that.dashboardName) {
+					that.dashboard = dashboard;
+				}
+			});
+			if (that.dashboard == undefined) {
+				callback(foundAccessories); 
+				return;
+			}
+			that.blynkServer.activate(that.dashboard.id)
+			.then(function (status) {
+				return that.blynkServer.getToken(that.dashboard.id);
+			})
+			.then(function (token) {
+				that.token = token;
+			})
+			.catch (function (err) {
+				that.log("Error getting token"); 
+				callback(foundAccessories); 
+				return;
+			});
+			that.BlynkAccessories.map(function(s) {
+				that.log("Found: " + s.name);
+				var accessory = null;
+				var services = [];
+				var service = null;
+				switch (s.widget) {
+					case "Switch":
+						service = {
+							controlService: new Service.Switch(s.caption),
+							characteristics: [Characteristic.On]
+						};
+						service.controlService.mode = s.mode;
+						break;
+					case "ContactSensor":
+						service = {
+							controlService: new Service.ContactSensor(s.caption),
+							characteristics: [Characteristic.ContactSensorState]
+						};
+						break;
+					case "TemperatureSensor":
+						service = {
+							controlService: new Service.TemperatureSensor(s.caption),
+							characteristics: [Characteristic.CurrentTemperature]
+						};
+						break;
+					default:
+						break;
+				}
+				if (service != null) {
+					service.controlService.widget = s.widget;
+					service.controlService.pin = s.pin;
+					services.push(service);
+					accessory = new BlynkAccessory(services);
+					accessory.getServices = function() {
+							return that.getServices(accessory);
+					};
+					accessory.platform 			= that;
+					accessory.remoteAccessory	= s;
+					accessory.name				= s.name;
+					accessory.model				= "Blynk";
+					accessory.manufacturer		= "Blynk";
+					accessory.serialNumber		= "<unknown>";
+					foundAccessories.push(accessory);
+				}
+			}
+		  )
+		  callback(foundAccessories);
+		})
+		.catch(function (error) {
+			this.log("Error: " + error);
+			callback(foundAccessories); 
+			return;
+	});
+}
+BlynkPlatform.prototype.hardwareWrite = function(pinString, value) {
+	var pinType = pinString.substr(0,1).toLowerCase();
+	var pin = pinString.substr(1);
+	var that = this;
+	this.blynkServer.hardware(this.dashboard.id, pinType, "w", pin, value ? 1 : 0)
+	.catch(function (err) {
+		that.log("There was a problem sending hardware write command on: " + pinString);
+	});
+}
+BlynkPlatform.prototype.hardwareRead = function(callback, characteristic, service) {
+	var pinString = service.controlService.pin;
+	var pinType = pinString.substr(0,1).toLowerCase();
+	var pin = parseInt(pinString.substr(1));
+	var that = this;
+	this.blynkServer.hardware(this.dashboard.id, pinType, "r", pin)
+	.then(function (fields) {
+		var pinValue = fields[3];
+		var retValue = null;
+		switch (service.controlService.widget) {
+			case "Switch":
+				retValue = pinValue == "1" ? true : false;
+				break;
+			case "ContactSensor":
+				retValue = parseInt(pinValue);
+				break;
+			case "TemperatureSensor":
+				retValue = parseFloat(pinValue);
+				break;
+			default:
+				break;
+		}
+		if (callback)
+			callback(undefined, retValue);
+	})
+	.catch(function (err) {
+		that.log("There was a problem sending hardware read command on: " + pinString + " - " + err);
+		if (callback)
+			callback(undefined, retValue);
+	});
+}
+BlynkPlatform.prototype.getInformationService = function(homebridgeAccessory) {
     var informationService = new Service.AccessoryInformation();
     informationService
                 .setCharacteristic(Characteristic.Name, homebridgeAccessory.name)
@@ -202,15 +207,18 @@ BlynkPlatform.prototype = {
 			    .setCharacteristic(Characteristic.Model, homebridgeAccessory.model)
 			    .setCharacteristic(Characteristic.SerialNumber, homebridgeAccessory.serialNumber);
   	return informationService;
-  },
-  bindCharacteristicEvents: function(characteristic, service, homebridgeAccessory) {
-   	characteristic
+}
+BlynkPlatform.prototype.bindCharacteristicEvents = function(characteristic, service, homebridgeAccessory) {
+	setTimeout( function() {
+		this.updateWidget(service, characteristic)
+	}.bind(this), INITIAL_UPDATE_PERIOD);
+	characteristic
 		.on('set', function(value, callback, context) {
-						if(context !== 'fromSetValue') {
+						if(context !== 'fromSetValue' && context !== 'fromPoller') {
 							switch (service.controlService.widget) {
 								case "Switch":
 									var pin = service.controlService.pin;
-									homebridgeAccessory.platform.hardwareWrite(pin, value, homebridgeAccessory);
+									this.hardwareWrite(pin, value, homebridgeAccessory);
 									if (service.controlService.subtype == "PUSH") {
 										// In order to behave like a push button reset the status to off
 										setTimeout( function(){
@@ -226,10 +234,10 @@ BlynkPlatform.prototype = {
 				   }.bind(this) );
     characteristic
         .on('get', function(callback) {
-						homebridgeAccessory.platform.hardwareRead(callback, homebridgeAccessory, characteristic, service)
+						this.hardwareRead(callback, characteristic, service)
                    }.bind(this) );
-  },
-  getServices: function(homebridgeAccessory) {
+}
+BlynkPlatform.prototype.getServices = function(homebridgeAccessory) {
   	var services = [];
   	var informationService = homebridgeAccessory.platform.getInformationService(homebridgeAccessory);
   	services.push(informationService);
@@ -244,12 +252,41 @@ BlynkPlatform.prototype = {
 		services.push(service.controlService);
     }
     return services;
-  }  
+}  
+BlynkPlatform.prototype.updateWidget = function(service, characteristic) {
+	var pinString = service.controlService.pin;
+	var pinType = pinString.substr(0,1).toLowerCase();
+	var pin = parseInt(pinString.substr(1));
+	this.blynkServer.hardware(this.dashboard.id, pinType, "r", pin)
+	.then(function (fields) {
+		var pinValue = fields[3];
+		var retValue = null;
+		switch (service.controlService.widget) {
+			case "Switch":
+				retValue = pinValue == "1" ? true : false;
+				break;
+			case "ContactSensor":
+				retValue = parseInt(pinValue);
+				break;
+			case "TemperatureSensor":
+				retValue = parseFloat(pinValue);
+				break;
+			default:
+				break;
+		}
+		characteristic.setValue(retValue, undefined, 'fromPoller');
+		setTimeout( function() {
+			this.updateWidget(service, characteristic)
+		}.bind(this), UPDATE_PERIOD);
+	}.bind(this))
+	.catch(function (err) {
+		this.log("There was a problem sending hardware read command on: " + pinString + " - " + err);
+		setTimeout( function() {
+			this.updateWidget(service, characteristic)
+		}.bind(this), UPDATE_PERIOD);
+	}.bind(this));
 }
 
 function BlynkAccessory(services) {
     this.services = services;
 }
-
-// TODO:
-// . Poller to periodically reading pins
