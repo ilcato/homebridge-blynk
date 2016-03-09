@@ -7,7 +7,6 @@
 //             "name": "Blynk",
 //             "server": "PUT THE ADDRESS OF THE LOCAL BLYNK SERVER HERE",
 //             "appPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 8443",
-//             "apiPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 9443",
 //             "username": "PUT THE VALUE OF THE USERNAME HERE",
 //             "password": "PUT THE VALUE OF THE PASSWORD HERE",
 // 			   "dashboardName": "PUT THE DASHBOARD NAME HERE",
@@ -62,7 +61,6 @@ function BlynkPlatform(log, config) {
   	this.log          	= log;
   	this.server			= config["server"];
   	this.appPort     		= config["appPort"];
-  	this.apiPort     		= config["apiPort"];
   	this.username     	= config["username"];
   	this.password		= config["password"];
   	this.dashboardName		= config["dashboardName"];
