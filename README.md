@@ -10,6 +10,9 @@ The plugin is published through [NPM](https://www.npmjs.com/package/homebridge-b
     
 # Release notes
 Version 0.1.0
++ Fixed dependencies
+
+Version 0.1.0
 + First usable version of the plugin
 + HomeKit accessories supported:
 	+ Switch
