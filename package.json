@@ -23,7 +23,8 @@
     "Siri"
   ],
   "dependencies": {
-    "request": "^2.65.0"
+    "request": "^2.65.0",
+    "blynk-app-client": "^0.1.0"
   },
   "author": "ilcato",
   "license": "MIT",
