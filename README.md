@@ -32,5 +32,30 @@ Look for a sample config in [config.json example](https://github.com/ilcato/home
 
 # Usage notes
 + The plugin currently works only on a local Blynk server and not with the cloud one made available by Blynk
-+ You must create a Dashboard with the Blynk app that define the mapping between your hardware device, the server and the Blynk Widget
++ You must create a Project within the Blynk app that will define the mapping between your hardware device, the server and the Blynk Widget
+
+# Getting Started
++ Select a platform on which to install the plugin (any platform that support node.js should work)
++ install homebridge (follow instruction) on https://www.npmjs.com/package/homebridge
++ install the blynk homebridge plugin: 
+```sudo npm install -g homebridge-blynk```
++ create a config.json file in the .homebridge directory of the user that run homebridge (see example in https://github.com/ilcato/homebridge-blynk/blob/master/config.json)
++ start homebridge (and create an autostart file on the hosted platform)
++ For the config file:
+specify credentials and dashboard name of an existing dashboard on the referred local Blynk server
+assuming a switch within the dashboard specify in the accessories parameter of the config.json file:
+{ "name": "SwitchD5", "widget": "Switch", "mode": "SWITCH", "caption": "Lamp 1", "pin": "D5" }
+
+where:
+
+`name` will be the accessory name from the HomeKit point of view
+`widget` must be "Switch"
+`mode` can be "SWITCH" or "PUSH"
+`caption` will be the name you should refer to from Siri
+`pin` is the pin to actuate
++ Use an HomeKit app to add the accessory to the iPhone/iPad, e.g.: MyHome
+
+After that you can say to Siri:
+
+"turn on lamp 1" and you are all set.
 
