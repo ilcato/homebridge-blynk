@@ -44,7 +44,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var Service, Characteristic;
 var request = require("request");
-var blynk = require("blynk-app-client");
 
 const UPDATE_PERIOD = 2000;
 const INITIAL_UPDATE_PERIOD = 10000;
@@ -61,11 +60,8 @@ function BlynkPlatform(log, config) {
   	this.log          	= log;
   	this.server			= config["server"];
   	this.appPort     		= config["appPort"];
-  	this.username     	= config["username"];
-  	this.password		= config["password"];
-  	this.dashboardName		= config["dashboardName"];
   	this.BlynkAccessories = config["accessories"];
-  	this.blynkServer 	= blynk.createClient(this.server, this.appPort);
+	this.BlynkToken     = config["token"];
 }
 BlynkPlatform.prototype.accessories = function(callback) {
 	this.log("Loading accessories...");
@@ -76,33 +72,6 @@ BlynkPlatform.prototype.accessories = function(callback) {
 		callback(foundAccessories); 
 		return;
 	}
-	this.blynkServer.connect(this.username, this.password)
-		.then(function (status) {
-			return that.blynkServer.loadProfileGzipped();	
-		})
-		.then(function (profile) {
-			var dashBoards = JSON.parse(profile).dashBoards;
-			dashBoards.map(function(dashboard) {
-				if (dashboard.name == that.dashboardName) {
-					that.dashboard = dashboard;
-				}
-			});
-			if (that.dashboard == undefined) {
-				callback(foundAccessories); 
-				return;
-			}
-			that.blynkServer.activate(that.dashboard.id)
-			.then(function (status) {
-				return that.blynkServer.getToken(that.dashboard.id);
-			})
-			.then(function (token) {
-				that.token = token;
-			})
-			.catch (function (err) {
-				that.log("Error getting token"); 
-				callback(foundAccessories); 
-				return;
-			});
 			that.BlynkAccessories.map(function(s) {
 				that.log("Found: " + s.name);
 				var accessory = null;
@@ -116,16 +85,16 @@ BlynkPlatform.prototype.accessories = function(callback) {
 						};
 						service.controlService.mode = s.mode;
 						break;
-					case "ContactSensor":
-						service = {
-							controlService: new Service.ContactSensor(s.caption),
-							characteristics: [Characteristic.ContactSensorState]
-						};
-						break;
 					case "TemperatureSensor":
 						service = {
 							controlService: new Service.TemperatureSensor(s.caption),
 							characteristics: [Characteristic.CurrentTemperature]
+						};
+						break;
+					case "HumiditySensor":
+						service = {
+							controlService: new Service.HumiditySensor(s.caption),
+							characteristics: [Characteristic.CurrentRelativeHumidity]
 						};
 						break;
 					default:
@@ -148,54 +117,50 @@ BlynkPlatform.prototype.accessories = function(callback) {
 					foundAccessories.push(accessory);
 				}
 			}
-		  )
+			
+		);
 		  callback(foundAccessories);
-		})
-		.catch(function (error) {
-			this.log("Error: " + error);
-			callback(foundAccessories); 
-			return;
-	});
+
 }
 BlynkPlatform.prototype.hardwareWrite = function(pinString, value) {
-	var pinType = pinString.substr(0,1).toLowerCase();
+	/*var pinType = pinString.substr(0,1).toLowerCase();
 	var pin = pinString.substr(1);
 	var that = this;
 	this.blynkServer.hardware(this.dashboard.id, pinType, "w", pin, value ? 1 : 0)
 	.catch(function (err) {
 		that.log("There was a problem sending hardware write command on: " + pinString);
-	});
+	});*/
 }
 BlynkPlatform.prototype.hardwareRead = function(callback, characteristic, service) {
+		
 	var pinString = service.controlService.pin;
 	var pinType = pinString.substr(0,1).toLowerCase();
 	var pin = parseInt(pinString.substr(1));
-	var that = this;
-	this.blynkServer.hardware(this.dashboard.id, pinType, "r", pin)
-	.then(function (fields) {
-		var pinValue = fields[3];
-		var retValue = null;
-		switch (service.controlService.widget) {
+	
+	request('https://'+this.server+':'+this.appPort+'/'+this.BlynkToken+'/pin/'+pinString, function (error, response, body) {
+	  var retValue = null;
+	  console.log('Status:', response.statusCode);
+	  console.log('Headers:', JSON.stringify(response.headers));
+	  console.log('Response:', body);
+	  
+	switch (service.controlService.widget) {
 			case "Switch":
 				retValue = pinValue == "1" ? true : false;
 				break;
-			case "ContactSensor":
-				retValue = parseInt(pinValue);
-				break;
 			case "TemperatureSensor":
-				retValue = parseFloat(pinValue);
+				retValue = parseFloat(JSON.parse(body));
+				break;
+			case "HumiditySensor":
+				retValue = parseFloat(JSON.parse(body));
 				break;
 			default:
 				break;
 		}
-		if (callback)
-			callback(undefined, retValue);
+		
+	if (callback)
+	  callback(undefined, retValue);
 	})
-	.catch(function (err) {
-		that.log("There was a problem sending hardware read command on: " + pinString + " - " + err);
-		if (callback)
-			callback(undefined, retValue);
-	});
+
 }
 BlynkPlatform.prototype.getInformationService = function(homebridgeAccessory) {
     var informationService = new Service.AccessoryInformation();
@@ -252,37 +217,33 @@ BlynkPlatform.prototype.getServices = function(homebridgeAccessory) {
     return services;
 }  
 BlynkPlatform.prototype.updateWidget = function(service, characteristic) {
+	
 	var pinString = service.controlService.pin;
 	var pinType = pinString.substr(0,1).toLowerCase();
 	var pin = parseInt(pinString.substr(1));
-	this.blynkServer.hardware(this.dashboard.id, pinType, "r", pin)
-	.then(function (fields) {
-		var pinValue = fields[3];
-		var retValue = null;
-		switch (service.controlService.widget) {
+	
+	request('https://'+this.server+':'+this.appPort+'/'+this.BlynkToken+'/pin/'+pinString, function (error, response, body) {
+	  var retValue = null;
+	  console.log('Status:', response.statusCode);
+	  console.log('Headers:', JSON.stringify(response.headers));
+	  console.log('Response:', body);
+	  
+	switch (service.controlService.widget) {
 			case "Switch":
 				retValue = pinValue == "1" ? true : false;
 				break;
-			case "ContactSensor":
-				retValue = parseInt(pinValue);
-				break;
 			case "TemperatureSensor":
-				retValue = parseFloat(pinValue);
+				retValue = parseFloat(JSON.parse(body));
+				break;
+			case "HumiditySensor":
+				retValue = parseFloat(JSON.parse(body));
 				break;
 			default:
 				break;
 		}
-		characteristic.setValue(retValue, undefined, 'fromPoller');
-		setTimeout( function() {
-			this.updateWidget(service, characteristic)
-		}.bind(this), UPDATE_PERIOD);
-	}.bind(this))
-	.catch(function (err) {
-		this.log("There was a problem sending hardware read command on: " + pinString + " - " + err);
-		setTimeout( function() {
-			this.updateWidget(service, characteristic)
-		}.bind(this), UPDATE_PERIOD);
-	}.bind(this));
+		
+		characteristic.setValue(parseFloat(JSON.parse(body)), undefined, 'fromPoller');
+	});
 }
 
 function BlynkAccessory(services) {
