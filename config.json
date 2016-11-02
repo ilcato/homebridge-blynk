@@ -13,9 +13,8 @@
             "platform": "Blynk",
             "name": "Blynk",
             "server": "PUT THE ADDRESS OF THE LOCAL BLYNK SERVER HERE",
-            "httpsPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 8443",
-            "username": "PUT THE VALUE OF THE USERNAME HERE",
-            "password": "PUT THE VALUE OF THE PASSWORD HERE",
+            "httpsPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 9443",
+            "token" : "Your project token",
 			"dashboardName": "PUT THE DASHBOARD NAME HERE",
             "accessories": [
             	{
