@@ -26,6 +26,7 @@ Version 0.1.0
 Remember to configure the plugin in config.json in your home directory inside the .homebridge directory. Configuration parameters:
 + "server": "PUT THE ADDRESS OF THE LOCAL BLYNK SERVER HERE",
 + "httpsPort": "PUT THE HTTPS PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 9443",
++ "token" : "Your project token".
 + "dashboardName": "PUT THE DASHBOARD NAME HERE",
 + "accessories": "PUT THE LIST OF ACCESSORIES THAT YOU WANT TO MAP TO HOMEKIT"
 
