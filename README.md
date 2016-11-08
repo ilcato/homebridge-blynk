@@ -9,6 +9,9 @@ The plugin is published through [NPM](https://www.npmjs.com/package/homebridge-b
     npm install -g homebridge-blynk
     
 # Release notes
+Version 0.3.0
++ Cleanup and fixes
+
 Version 0.2.0
 + Use of standard Blynk Rest API
 
