@@ -6,9 +6,8 @@
 //             "platform": "Blynk",
 //             "name": "Blynk",
 //             "server": "PUT THE ADDRESS OF THE LOCAL BLYNK SERVER HERE",
-//             "appPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 8443",
-//             "username": "PUT THE VALUE OF THE USERNAME HERE",
-//             "password": "PUT THE VALUE OF THE PASSWORD HERE",
+//             "httpsPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 8443",
+//             "token" : "Your project token".
 // 			   "dashboardName": "PUT THE DASHBOARD NAME HERE",
 //             "accessories": [
 //             	{
@@ -45,24 +44,23 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 var Service, Characteristic;
 var request = require("request");
 
-const UPDATE_PERIOD = 2000;
 const INITIAL_UPDATE_PERIOD = 10000;
-
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
   
   homebridge.registerPlatform("homebridge-blynk", "Blynk", BlynkPlatform);
-}
+};
 
 function BlynkPlatform(log, config) {
   	this.log          	= log;
   	this.server			= config["server"];
-  	this.appPort     		= config["appPort"];
+  	this.httpsPort     		= config["httpsPort"];
   	this.BlynkAccessories = config["accessories"];
-	this.BlynkToken     = config["token"];
+	this.token     = config["token"];
 }
+
 BlynkPlatform.prototype.accessories = function(callback) {
 	this.log("Loading accessories...");
 
@@ -121,7 +119,8 @@ BlynkPlatform.prototype.accessories = function(callback) {
 		);
 		  callback(foundAccessories);
 
-}
+};
+
 BlynkPlatform.prototype.hardwareWrite = function(pinString, value) {
 	/*var pinType = pinString.substr(0,1).toLowerCase();
 	var pin = pinString.substr(1);
@@ -130,14 +129,13 @@ BlynkPlatform.prototype.hardwareWrite = function(pinString, value) {
 	.catch(function (err) {
 		that.log("There was a problem sending hardware write command on: " + pinString);
 	});*/
-}
+};
+
 BlynkPlatform.prototype.hardwareRead = function(callback, characteristic, service) {
 		
 	var pinString = service.controlService.pin;
-	var pinType = pinString.substr(0,1).toLowerCase();
-	var pin = parseInt(pinString.substr(1));
-	
-	request('https://'+this.server+':'+this.appPort+'/'+this.BlynkToken+'/pin/'+pinString, function (error, response, body) {
+
+	request('https://' + this.server + ':' + this.httpsPort + '/' + this.token + '/get/' + pinString, function (error, response, body) {
 	  var retValue = null;
 	  console.log('Status:', response.statusCode);
 	  console.log('Headers:', JSON.stringify(response.headers));
@@ -145,7 +143,7 @@ BlynkPlatform.prototype.hardwareRead = function(callback, characteristic, servic
 	  
 	switch (service.controlService.widget) {
 			case "Switch":
-				retValue = pinValue == "1" ? true : false;
+				retValue = (body == ["1"]);
 				break;
 			case "TemperatureSensor":
 				retValue = parseFloat(JSON.parse(body));
@@ -161,7 +159,8 @@ BlynkPlatform.prototype.hardwareRead = function(callback, characteristic, servic
 	  callback(undefined, retValue);
 	})
 
-}
+};
+
 BlynkPlatform.prototype.getInformationService = function(homebridgeAccessory) {
     var informationService = new Service.AccessoryInformation();
     informationService
@@ -170,7 +169,8 @@ BlynkPlatform.prototype.getInformationService = function(homebridgeAccessory) {
 			    .setCharacteristic(Characteristic.Model, homebridgeAccessory.model)
 			    .setCharacteristic(Characteristic.SerialNumber, homebridgeAccessory.serialNumber);
   	return informationService;
-}
+};
+
 BlynkPlatform.prototype.bindCharacteristicEvents = function(characteristic, service, homebridgeAccessory) {
 	setTimeout( function() {
 		this.updateWidget(service, characteristic)
@@ -199,7 +199,8 @@ BlynkPlatform.prototype.bindCharacteristicEvents = function(characteristic, serv
         .on('get', function(callback) {
 						this.hardwareRead(callback, characteristic, service)
                    }.bind(this) );
-}
+};
+
 BlynkPlatform.prototype.getServices = function(homebridgeAccessory) {
   	var services = [];
   	var informationService = homebridgeAccessory.platform.getInformationService(homebridgeAccessory);
@@ -215,14 +216,13 @@ BlynkPlatform.prototype.getServices = function(homebridgeAccessory) {
 		services.push(service.controlService);
     }
     return services;
-}  
+};
+
 BlynkPlatform.prototype.updateWidget = function(service, characteristic) {
 	
 	var pinString = service.controlService.pin;
-	var pinType = pinString.substr(0,1).toLowerCase();
-	var pin = parseInt(pinString.substr(1));
-	
-	request('https://'+this.server+':'+this.appPort+'/'+this.BlynkToken+'/pin/'+pinString, function (error, response, body) {
+
+	request('https://' + this.server + ':' + this.httpsPort + '/' + this.token + '/get/' + pinString, function (error, response, body) {
 	  var retValue = null;
 	  console.log('Status:', response.statusCode);
 	  console.log('Headers:', JSON.stringify(response.headers));
@@ -230,7 +230,7 @@ BlynkPlatform.prototype.updateWidget = function(service, characteristic) {
 	  
 	switch (service.controlService.widget) {
 			case "Switch":
-				retValue = pinValue == "1" ? true : false;
+				retValue = (body == ["1"]);
 				break;
 			case "TemperatureSensor":
 				retValue = parseFloat(JSON.parse(body));
@@ -244,7 +244,7 @@ BlynkPlatform.prototype.updateWidget = function(service, characteristic) {
 		
 		characteristic.setValue(parseFloat(JSON.parse(body)), undefined, 'fromPoller');
 	});
-}
+};
 
 function BlynkAccessory(services) {
     this.services = services;
