@@ -1,6 +1,6 @@
 {
   "name": "homebridge-blynk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Homebridge plugin for the Blynk platform",
   "note": "peerDependencies is hardcoded to peerDepdendencies in homebridge!!!",
   "main": "index.js",
