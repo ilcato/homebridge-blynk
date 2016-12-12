@@ -135,29 +135,36 @@ BlynkPlatform.prototype.hardwareRead = function(callback, characteristic, servic
 		
 	var pinString = service.controlService.pin;
 
-	request('https://' + this.server + ':' + this.httpsPort + '/' + this.token + '/get/' + pinString, function (error, response, body) {
-	  var retValue = null;
-	  console.log('Status:', response.statusCode);
-	  console.log('Headers:', JSON.stringify(response.headers));
-	  console.log('Response:', body);
-	  
-	switch (service.controlService.widget) {
-			case "Switch":
-				retValue = (body == ["1"]);
-				break;
-			case "TemperatureSensor":
-				retValue = parseFloat(JSON.parse(body));
-				break;
-			case "HumiditySensor":
-				retValue = parseFloat(JSON.parse(body));
-				break;
-			default:
-				break;
-		}
-		
-	if (callback)
-	  callback(undefined, retValue);
-	})
+	request('https://' + this.server + ':' + this.httpsPort + '/' + this.token + '/get/' + pinString,
+        function (error, response, body) {
+            if (response) {
+                var retValue = null;
+                console.log('Status:', response.statusCode);
+                console.log('Headers:', JSON.stringify(response.headers));
+                console.log('Response:', body);
+
+                switch (service.controlService.widget) {
+                    case "Switch":
+                        retValue = (body == ["1"]);
+                        break;
+                    case "TemperatureSensor":
+                        retValue = parseFloat(JSON.parse(body));
+                        break;
+                    case "HumiditySensor":
+                        retValue = parseFloat(JSON.parse(body));
+                        break;
+                    default:
+                        break;
+                }
+
+                if (callback) {
+                    callback(undefined, retValue);
+                }
+            } else {
+                console.log('Error during performing request : ', error);
+            }
+        }
+    )
 
 };
 
@@ -222,28 +229,34 @@ BlynkPlatform.prototype.updateWidget = function(service, characteristic) {
 	
 	var pinString = service.controlService.pin;
 
-	request('https://' + this.server + ':' + this.httpsPort + '/' + this.token + '/get/' + pinString, function (error, response, body) {
-	  var retValue = null;
-	  console.log('Status:', response.statusCode);
-	  console.log('Headers:', JSON.stringify(response.headers));
-	  console.log('Response:', body);
-	  
-	switch (service.controlService.widget) {
-			case "Switch":
-				retValue = (body == ["1"]);
-				break;
-			case "TemperatureSensor":
-				retValue = parseFloat(JSON.parse(body));
-				break;
-			case "HumiditySensor":
-				retValue = parseFloat(JSON.parse(body));
-				break;
-			default:
-				break;
+	request('https://' + this.server + ':' + this.httpsPort + '/' + this.token + '/get/' + pinString,
+		function (error, response, body) {
+            if (response) {
+                var retValue = null;
+                console.log('Status:', response.statusCode);
+                console.log('Headers:', JSON.stringify(response.headers));
+                console.log('Response:', body);
+
+                switch (service.controlService.widget) {
+                    case "Switch":
+                        retValue = (body == ["1"]);
+                        break;
+                    case "TemperatureSensor":
+                        retValue = parseFloat(JSON.parse(body));
+                        break;
+                    case "HumiditySensor":
+                        retValue = parseFloat(JSON.parse(body));
+                        break;
+                    default:
+                        break;
+                }
+
+                characteristic.setValue(parseFloat(JSON.parse(body)), undefined, 'fromPoller');
+            } else {
+                console.log('Error during performing request : ', error);
+            }
 		}
-		
-		characteristic.setValue(parseFloat(JSON.parse(body)), undefined, 'fromPoller');
-	});
+	);
 };
 
 function BlynkAccessory(services) {
