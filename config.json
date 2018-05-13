@@ -12,28 +12,27 @@
             {
             "platform": "Blynk",
             "name": "Blynk",
-            "server": "PUT THE ADDRESS OF THE LOCAL BLYNK SERVER HERE",
-            "httpsPort": "PUT THE PORT OF THE LOCAL BLYNK SERVER HERE, TIPICALLY 9443",
-            "token" : "Your project token",
-			"dashboardName": "PUT THE DASHBOARD NAME HERE",
+            "serverurl": "PUT THE URL OF THE BLYNK SERVER HERE, e.g.: http://10.0.0.102:8080",
+            "token" : "PUT YOUR PROJECT AUTHORIZATION TOKEN HERE",
+            "pollerperiod": "PUT 0 FOR DISABLING POLLING, 1 - 100 INTERVAL IN SECONDS. 1 SECONDS IS THE DEFAULT",
             "accessories": [
             	{
-                    "name": 		"SwitchD5",
+                    "name": 		"Switch1",
                     "widget":		"Switch",
                     "mode": 		"SWITCH",
-                    "caption": 		"Lamp 1",
-                    "pin": 			"D5"
+                    "caption": 		"Main Lamp",
+                    "pin": 			"D3"
             	},
             	{
                 	"name": 		"ContactSensor1",
                     "widget":		"ContactSensor",
-                    "caption": 		"Door 1",
-                    "pin": 			"D4"
+                    "caption": 		"Main Door",
+                    "pin": 			"D2"
             	},
             	{
                 	"name": 		"TemperatureSensor1",
                     "widget":		"TemperatureSensor",
-                    "caption": 		"Temperature 1",
+                    "caption": 		"Kitchen Temperature",
                     "pin": 			"A17"
             	}
             ]

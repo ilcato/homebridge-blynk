@@ -81,7 +81,7 @@ BlynkPlatform.prototype.accessories = function(callback) {
 							controlService: new Service.Switch(s.caption),
 							characteristics: [Characteristic.On]
 						};
-						service.controlService.mode = s.mode;
+						service.controlService.subtype = s.mode;
 						break;
 					case "TemperatureSensor":
 						service = {

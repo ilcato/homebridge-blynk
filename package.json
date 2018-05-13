@@ -3,14 +3,15 @@
   "version": "0.3.0",
   "description": "Homebridge plugin for the Blynk platform",
   "note": "peerDependencies is hardcoded to peerDepdendencies in homebridge!!!",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "tsc",
     "start": "echo \"Error: configure and run homebridge to start\" && exit 1"
   },
   "engines": {
-    "node": ">4.0.0",
-    "homebridge": ">=0.2.0"
+    "node": ">7.0.0",
+    "homebridge": ">=0.4.0"
   },
   "repository": {
     "type": "git",
@@ -23,11 +24,11 @@
     "Siri"
   ],
   "dependencies": {
-    "request": "^2.65.0",
-    "blynk-app-client": "^0.1.0"
+    "request": "^2.85.0",
+    "typescript": "^2.2.2"
   },
   "author": "ilcato",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/ilcato/homebridge-blynk/issues"
   },

@@ -9,6 +9,11 @@ The plugin is published through [NPM](https://www.npmjs.com/package/homebridge-b
     npm install -g homebridge-blynk
     
 # Release notes
+Version 0.9.0
++ Complete rewriting in typescrypt and homebridge plugin 2.0 API
++ Based on Blynk REST API
++ Works on both cloud server and local server: for cloud server the Blynk App must be running in order to receive automatic update of the pin values (setting pins works also without the app runing); for local server put "allow.reading.widget.without.active.app=true" in server.properties in order to be able to receive automatic update of the pin values. 
+
 Version 0.3.0
 + Cleanup and fixes
 
@@ -54,11 +59,11 @@ assuming a switch within the dashboard specify in the accessories parameter of t
 where:
 
 `name` will be the accessory name from the HomeKit point of view
-`widget` must be "Switch"
+`widget` must be one of: "Switch", "TemperatureSensor", "HumiditySensor", "MotionSensor", "SmokeSensor", "LightSensor"
 `mode` can be "SWITCH" or "PUSH"
 `caption` will be the name you should refer to from Siri
 `pin` is the pin to actuate
-+ Use an HomeKit app to add the accessory to the iPhone/iPad, e.g.: MyHome
++ Use the Home app to add the accessory to the iPhone/iPad
 
 After that you can say to Siri:
 
