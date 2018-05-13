@@ -14,6 +14,7 @@ Version 0.9.0
 + Based on Blynk REST API
 + Works on both cloud server and local server: for cloud server the Blynk App must be running in order to receive automatic update of the pin values (setting pins works also without the app runing); for local server put "allow.reading.widget.without.active.app=true" in server.properties in order to be able to receive automatic update of the pin values.
 + Addedd "MotionSensor", "SmokeSensor", "LightSensor" widget types
++ new config.json format
 
 Version 0.3.0
 + Cleanup and fixes
