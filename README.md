@@ -43,8 +43,8 @@ Remember to configure the plugin in config.json in your home directory inside th
 Look for a sample config in [config.json example](https://github.com/ilcato/homebridge-blynk/blob/master/config.json)
 
 # Usage notes
-+ The plugin currently works only on a local Blynk server and not with the cloud one made available by Blynk
-+ You must create a Project within the Blynk app that will define the mapping between your hardware device, the server and the Blynk Widget
++ Works on both cloud server and local server: for cloud server the Blynk App must be running in order to receive automatic update of the pin values (setting pins works also without the app runing); for local server put "allow.reading.widget.without.active.app=true" in server.properties in order to be able to receive automatic update of the pin values.
++ You must create a Project within the Blynk app that will define the mapping between your hardware device, the server and the Blynk Widgets
 
 # Getting Started
 + Select a platform on which to install the plugin (any platform that support node.js should work)
